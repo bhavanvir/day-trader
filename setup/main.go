@@ -84,18 +84,8 @@ func saveStockToDatabase(stock Stock) error {
 	}
 	defer db.Close()
 
-	// Create the stocks table if it doesn't exist
-	_, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS stocks (
-			id UUID PRIMARY KEY,
-			stock_name VARCHAR(255) NOT NULL
-		)`)
-	if err != nil {
-		return err
-	}
-
 	// Insert stock into the stocks table
-	_, err = db.Exec("INSERT INTO stocks (id, stock_name) VALUES ($1, $2)", stock.ID, stock.StockName)
+	_, err = db.Exec("INSERT INTO stocks (stock_name) VALUES ($1)", stock.StockName)
 	if err != nil {
 		return err
 	}
