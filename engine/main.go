@@ -161,6 +161,49 @@ func (pq *PriorityQueue) Printn() {
 // 	heap.Fix(pq, order.StockTxID)
 // }
 
+// Used by clean up routine to remove timed out orders
+// Pass in the order book, search both queues for stale/old orders and remove them
+
+func remove(book *OrderBook){
+	// Take timestamp of when remove was called
+	currTime := time.Now().Format(time.RFC3339Nano)
+	// Timeout limit placeholder, not sure where this is stored
+	//timeout = 15 min
+
+	tempBuyQueue := book.BuyOrders
+	tempSellQueue := book.SellOrders
+
+	nBuy := len(tempBuy)
+	nSell := len(tempSell)
+	if (nBuy == 0) && (nSell == 0) {
+		return 
+	}
+
+	//Check for timed out orders in buyQueue
+	for i := 0; i < nBuy; i++ {
+		if (((currTime) - tempBuyQueue[i].time_stamp) > timeout )
+			// remove order from queue
+	}
+
+	//Check for timed out orders in sellQueue
+	for i := 0; i < nSell; i++ {
+		if (((currTime) - tempSellQueue[i].time_stamp) > timeout ){
+			// remove order from queue
+			if(i == 0)
+				tempSellQueue = tempSellQueue[1:nSell]
+			elif (i == nSell)
+				tempSellQueue = tempSellQueue[0:nSell-1]
+			elif
+			tempSellQueue = tempSellQueue[0:i-1] + tempSellQueue[i+1:nSell]
+		}
+	}
+
+	// Update the queues
+	//book.BuyOrders = tempBuyQueue
+	//book.SellOrders = tempSellQueue
+	return
+}
+
 // generateOrderID generates a unique ID for each order
 func generateOrderID() string {
 	return uuid.New().String()
