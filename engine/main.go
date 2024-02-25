@@ -9,10 +9,11 @@ import (
 	"container/heap"
 	"database/sql"
 	"fmt"
-	"github.com/gin-contrib/cors"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/gin-contrib/cors"
 
 	"github.com/Poomon001/day-trading-package/identification"
 	"github.com/gin-gonic/gin"
@@ -164,43 +165,49 @@ func (pq *PriorityQueue) Printn() {
 // Used by clean up routine to remove timed out orders
 // Pass in the order book, search both queues for stale/old orders and remove them
 
-func remove(book *OrderBook){
+func remove(book *OrderBook) {
+	//orderBookMap.mu.Lock()
+	//defer orderBookMap.mu.Unlock()
+
 	// Take timestamp of when remove was called
 	currTime := time.Now().Format(time.RFC3339Nano)
-	// Timeout limit placeholder, not sure where this is stored
-	//timeout = 15 min
+	currTimestamp, _ := time.Parse(time.Layout, currTime)
 
-	tempBuyQueue := book.BuyOrders
-	tempSellQueue := book.SellOrders
+	tempBuyQueue := book.BuyOrders.Order
+	tempSellQueue := book.SellOrders.Order
 
-	nBuy := len(tempBuy)
-	nSell := len(tempSell)
+	nBuy := len(tempBuyQueue)
+	nSell := len(tempSellQueue)
 	if (nBuy == 0) && (nSell == 0) {
-		return 
+		return
 	}
 
 	//Check for timed out orders in buyQueue
 	for i := 0; i < nBuy; i++ {
-		if (((currTime) - tempBuyQueue[i].time_stamp) > timeout )
+		// Set timeout to 15min after order timestamp
+		buyTimeStamp, _ := time.Parse(time.Layout, tempBuyQueue[i].TimeStamp)
+		timeout := buyTimeStamp.Add(time.Minute * 15)
+
+		if buyTimeStamp.Sub(currTimestamp) > timeout {
 			// remove order from queue
+			tempBuyQueue[i], tempBuyQueue[nBuy-1] = tempBuyQueue[nBuy-1], tempBuyQueue[i]
+			tempBuyQueue = tempBuyQueue[:nBuy-1]
+		}
 	}
 
 	//Check for timed out orders in sellQueue
 	for i := 0; i < nSell; i++ {
-		if (((currTime) - tempSellQueue[i].time_stamp) > timeout ){
+		// Set timeout to 15min after order timestamp
+		sellTimeStamp, _ := time.Parse(time.Layout, tempSellQueue[i].TimeStamp)
+		timeout := sellTimeStamp.Add(time.Minute * 15)
+
+		if sellTimeStamp.Sub(currTimestamp) > timeout {
 			// remove order from queue
-			if(i == 0)
-				tempSellQueue = tempSellQueue[1:nSell]
-			elif (i == nSell)
-				tempSellQueue = tempSellQueue[0:nSell-1]
-			elif
-			tempSellQueue = tempSellQueue[0:i-1] + tempSellQueue[i+1:nSell]
+			tempSellQueue[i], tempSellQueue[nSell-1] = tempSellQueue[nSell-1], tempSellQueue[i]
+			tempSellQueue = tempSellQueue[:nSell-1]
 		}
 	}
 
-	// Update the queues
-	//book.BuyOrders = tempBuyQueue
-	//book.SellOrders = tempSellQueue
 	return
 }
 
@@ -765,4 +772,9 @@ func main() {
 	router.POST("/placeStockOrder", identification.Identification, HandlePlaceStockOrder)
 	router.POST("/cancelStockTransaction", identification.Identification, HandleCancelStockTransaction)
 	router.Run(":8585")
+
+	// test for timeout checks
+	//time.Sleep(time.Minute * 1)
+	//remove(OrderBook)
+
 }
