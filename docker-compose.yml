@@ -101,20 +101,20 @@ services:
     networks:
       - nt-network
 
-  jmeter:
-    image: justb4/jmeter:latest
-    container_name: jmeter
-    platform: linux/amd64
-    volumes:
-      - ./tests:/tests
-    depends_on:
-      - setup
-      - authentication
-      - transaction
-      - engine
-      - database
-    command: -n -t /tests/Seng468_Report1_No_Delay.jmx -l /tests/results.jtl
-    network_mode: host
+  # jmeter:
+  #   image: justb4/jmeter:latest
+  #   container_name: jmeter
+  #   platform: linux/amd64
+  #   volumes:
+  #     - ./tests:/tests
+  #   depends_on:
+  #     - setup
+  #     - authentication
+  #     - transaction
+  #     - engine
+  #     - database
+  #   command: -n -t /tests/Seng468_Report1_No_Delay.jmx -l /tests/results.jtl
+  #   network_mode: host
 
 networks:
   nt-network:
